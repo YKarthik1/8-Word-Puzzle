@@ -1,0 +1,49 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>8 Puzzle AI Solver</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+
+</head>
+
+<body>
+
+<h1>8 Puzzle AI Solver</h1>
+
+<div class="controls">
+
+<label>Search Method</label>
+
+<select id="method">
+
+<option>BFS</option>
+<option>DFS</option>
+<option>A*</option>
+
+</select>
+
+<h3>Initial State</h3>
+
+<input id="initial" value="1 2 3 8 0 4 7 6 5">
+
+<h3>Goal State</h3>
+
+<input id="goal" value="2 8 1 0 4 3 7 6 5">
+
+<button onclick="solve()">Solve Puzzle</button>
+
+</div>
+
+<div id="board"></div>
+
+<div id="metrics"></div>
+
+<script src="script.js"></script>
+
+</body>
+</html>

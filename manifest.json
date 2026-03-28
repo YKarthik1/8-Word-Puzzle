@@ -1,0 +1,16 @@
+
+{
+
+"name":"8 Puzzle AI Solver",
+
+"short_name":"8Puzzle",
+
+"start_url":"index.html",
+
+"display":"standalone",
+
+"background_color":"#ffffff",
+
+"theme_color":"#4CAF50"
+
+}
