@@ -1,20 +1,35 @@
-
-const moves=[[-1,0],[1,0],[0,-1],[0,1]];
+const moves=[
+[-1,0],
+[1,0],
+[0,-1],
+[0,1]
+];
 
 
 function parseInput(str){
 
 let nums=str.split(" ").map(Number);
 
+if(nums.length!=9){
+
+alert("Enter 9 numbers");
+
+return null;
+
+}
+
 return[
-
 nums.slice(0,3),
-
 nums.slice(3,6),
-
 nums.slice(6,9)
-
 ];
+
+}
+
+
+function stringify(s){
+
+return JSON.stringify(s);
 
 }
 
@@ -22,11 +37,8 @@ nums.slice(6,9)
 function findBlank(state){
 
 for(let i=0;i<3;i++)
-
 for(let j=0;j<3;j++)
-
 if(state[i][j]==0)
-
 return[i,j];
 
 }
@@ -63,10 +75,9 @@ return list;
 
 function manhattan(a,b){
 
-let dist=0;
+let d=0;
 
 for(let i=0;i<3;i++)
-
 for(let j=0;j<3;j++){
 
 let val=a[i][j];
@@ -74,45 +85,32 @@ let val=a[i][j];
 if(val!=0){
 
 for(let x=0;x<3;x++)
-
 for(let y=0;y<3;y++)
-
 if(b[x][y]==val)
-
-dist+=Math.abs(i-x)+Math.abs(j-y);
-
-}
+d+=Math.abs(i-x)+Math.abs(j-y);
 
 }
 
-return dist;
+}
+
+return d;
 
 }
 
 
-function solve(){
+function bfs(start,goal){
 
-let start=parseInput(document.getElementById("initial").value);
-
-let goal=parseInput(document.getElementById("goal").value);
-
-let method=document.getElementById("method").value;
+let q=[[start,[]]];
 
 let visited=new Set();
 
 let nodes=0;
 
-let t0=performance.now();
+while(q.length){
 
+let[state,path]=q.shift();
 
-let queue=[[start,[]]];
-
-
-while(queue.length){
-
-let[state,path]=method=="DFS"?queue.pop():queue.shift();
-
-let key=JSON.stringify(state);
+let key=stringify(state);
 
 if(visited.has(key))continue;
 
@@ -120,35 +118,83 @@ visited.add(key);
 
 nodes++;
 
+if(key==stringify(goal))
 
-if(JSON.stringify(state)==JSON.stringify(goal)){
+return{path:[...path,state],nodes};
 
-let time=(performance.now()-t0)/1000;
+for(let n of neighbors(state))
+q.push([n,[...path,state]]);
 
-animate([...path,state]);
-
-document.getElementById("metrics").innerHTML=
-
-`Path cost: ${path.length}<br>
-
-Nodes explored: ${nodes}<br>
-
-Time: ${time.toFixed(3)} sec`;
-
-return;
+}
 
 }
 
 
+function dfs(start,goal){
+
+let stack=[[start,[]]];
+
+let visited=new Set();
+
+let nodes=0;
+
+while(stack.length){
+
+let[state,path]=stack.pop();
+
+let key=stringify(state);
+
+if(visited.has(key))continue;
+
+visited.add(key);
+
+nodes++;
+
+if(key==stringify(goal))
+
+return{path:[...path,state],nodes};
+
+for(let n of neighbors(state))
+stack.push([n,[...path,state]]);
+
+}
+
+}
+
+
+function astar(start,goal){
+
+let open=[[start,[],0]];
+
+let visited=new Set();
+
+let nodes=0;
+
+while(open.length){
+
+open.sort((a,b)=>a[2]-b[2]);
+
+let[state,path,cost]=open.shift();
+
+let key=stringify(state);
+
+if(visited.has(key))continue;
+
+visited.add(key);
+
+nodes++;
+
+if(key==stringify(goal))
+
+return{path:[...path,state],nodes};
+
 for(let n of neighbors(state)){
 
-if(method=="A*")
+let g=path.length+1;
 
-queue.push([n,[...path,state]]);
+let h=manhattan(n,goal);
 
-else
-
-queue.push([n,[...path,state]]);
+open.push([n,[...path,state],g+h]);
 
 }
 
@@ -163,9 +209,7 @@ let board=document.getElementById("board");
 
 board.innerHTML="";
 
-let flat=state.flat();
-
-flat.forEach(v=>{
+state.flat().forEach(v=>{
 
 let d=document.createElement("div");
 
@@ -184,15 +228,58 @@ function animate(path){
 
 let i=0;
 
-let interval=setInterval(()=>{
+let timer=setInterval(()=>{
 
 draw(path[i]);
 
 i++;
 
-if(i>=path.length)clearInterval(interval);
+if(i>=path.length)
+clearInterval(timer);
 
-},700);
+},500);
+
+}
+
+
+function solve(){
+
+let start=parseInput(document.getElementById("initial").value);
+
+let goal=parseInput(document.getElementById("goal").value);
+
+let method=document.getElementById("method").value;
+
+if(!start||!goal)return;
+
+let t0=performance.now();
+
+let result;
+
+if(method=="bfs")
+result=bfs(start,goal);
+
+else if(method=="dfs")
+result=dfs(start,goal);
+
+else
+result=astar(start,goal);
+
+let time=(performance.now()-t0)/1000;
+
+animate(result.path);
+
+document.getElementById("metrics").innerHTML=`
+
+Algorithm: ${method.toUpperCase()}<br>
+
+Path Cost: ${result.path.length-1}<br>
+
+Nodes Expanded: ${result.nodes}<br>
+
+Time: ${time.toFixed(3)} sec
+
+`;
 
 }
 
